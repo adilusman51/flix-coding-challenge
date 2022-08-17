@@ -1,6 +1,12 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import {
+	StyleProp,
+	StyleSheet,
+	TextStyle,
+	TouchableOpacity,
+	ViewStyle,
+} from 'react-native';
 
 import { Text, View } from './Themed';
 
@@ -13,6 +19,10 @@ interface TableListProps {
 	data?: Data;
 	defaultSortKey?: string;
 	defaultSortDirection?: SortDirection;
+	headerItemStyle?: StyleProp<ViewStyle>;
+	headerTextStyle?: StyleProp<TextStyle>;
+	itemStyle?: StyleProp<ViewStyle>;
+	itemTextStyle?: StyleProp<TextStyle>;
 }
 
 export default function TableList({
@@ -20,6 +30,10 @@ export default function TableList({
 	data,
 	defaultSortKey,
 	defaultSortDirection,
+	headerItemStyle,
+	headerTextStyle,
+	itemStyle,
+	itemTextStyle,
 }: TableListProps) {
 	const [sortDirection, setSortDirection] = useState<SortDirection>(
 		defaultSortDirection || 'None'
@@ -104,7 +118,7 @@ export default function TableList({
 						style={styles.headerItemContainer}
 					>
 						<TouchableOpacity
-							style={styles.headerItem}
+							style={[styles.headerItem, headerItemStyle]}
 							onPress={() => {
 								if (sortKey === header?.key) {
 									toggleSortDirection();
@@ -115,7 +129,10 @@ export default function TableList({
 							}}
 						>
 							<Text
-								style={styles.headerTextStyle}
+								style={[
+									styles.headerTextStyle,
+									headerTextStyle,
+								]}
 								lightColor='rgba(0,0,0,0.8)'
 								darkColor='rgba(255,255,255,0.8)'
 							>
@@ -151,10 +168,13 @@ export default function TableList({
 							return (
 								<View
 									key={index?.toString()}
-									style={styles.item}
+									style={[styles.item, itemStyle]}
 								>
 									<Text
-										style={styles.itemTextStyle}
+										style={[
+											styles.itemTextStyle,
+											itemTextStyle,
+										]}
 										lightColor='rgba(0,0,0,0.8)'
 										darkColor='rgba(255,255,255,0.8)'
 									>
@@ -184,7 +204,7 @@ const styles = StyleSheet.create({
 		justifyContent: 'space-between',
 		padding: 8,
 		borderWidth: 1,
-		borderColor: 'lightgrey',
+		borderColor: 'rgba(0,0,0,0.1)',
 		backgroundColor: 'rgba(0,0,0,0.025)',
 	},
 	headerTextStyle: {
@@ -199,7 +219,7 @@ const styles = StyleSheet.create({
 		justifyContent: 'space-between',
 		padding: 8,
 		borderWidth: 1,
-		borderColor: 'lightgrey',
+		borderColor: 'rgba(0,0,0,0.1)',
 	},
 	itemTextStyle: {
 		fontSize: 18,
