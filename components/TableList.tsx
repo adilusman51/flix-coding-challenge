@@ -14,6 +14,48 @@ export type Data<T = any> = Array<T>;
 
 type SortDirection = 'Asc' | 'Desc' | 'None';
 
+const sortData = (
+	data: Data,
+	sortKey: string,
+	sortDirection: SortDirection
+) => {
+	return data.sort((a, b) => {
+		const first = a?.[sortKey];
+		const second = b?.[sortKey];
+		if (typeof first === 'number') {
+			if (sortDirection === 'Asc') {
+				return first - second;
+			} else if (sortDirection === 'Desc') {
+				return second - first;
+			} else {
+				return 0;
+			}
+		} else if (typeof first === 'string') {
+			if (sortDirection === 'Asc') {
+				if (first > second) {
+					return 1;
+				} else if (first < second) {
+					return -1;
+				} else {
+					return 0;
+				}
+			} else if (sortDirection === 'Desc') {
+				if (first < second) {
+					return 1;
+				} else if (first > second) {
+					return -1;
+				} else {
+					return 0;
+				}
+			} else {
+				return 0;
+			}
+		} else {
+			return 0;
+		}
+	});
+};
+
 interface TableListProps {
 	headers: Array<{ label: string; key: string }>;
 	data?: Data;
@@ -23,6 +65,8 @@ interface TableListProps {
 	headerTextStyle?: StyleProp<TextStyle>;
 	itemStyle?: StyleProp<ViewStyle>;
 	itemTextStyle?: StyleProp<TextStyle>;
+	contentContainerStyle?: StyleProp<ViewStyle>;
+	headerItemContainerStyle?: StyleProp<ViewStyle>;
 }
 
 export default function TableList({
@@ -34,6 +78,8 @@ export default function TableList({
 	headerTextStyle,
 	itemStyle,
 	itemTextStyle,
+	contentContainerStyle,
+	headerItemContainerStyle,
 }: TableListProps) {
 	const [sortDirection, setSortDirection] = useState<SortDirection>(
 		defaultSortDirection || 'None'
@@ -57,41 +103,7 @@ export default function TableList({
 			return;
 		}
 
-		const _sortedData = [...data].sort((a, b) => {
-			const first = a?.[sortKey];
-			const second = b?.[sortKey];
-			if (typeof first === 'number') {
-				if (sortDirection === 'Asc') {
-					return first - second;
-				} else if (sortDirection === 'Desc') {
-					return second - first;
-				} else {
-					return 0;
-				}
-			} else if (typeof first === 'string') {
-				if (sortDirection === 'Asc') {
-					if (first > second) {
-						return 1;
-					} else if (first < second) {
-						return -1;
-					} else {
-						return 0;
-					}
-				} else if (sortDirection === 'Desc') {
-					if (first < second) {
-						return 1;
-					} else if (first > second) {
-						return -1;
-					} else {
-						return 0;
-					}
-				} else {
-					return 0;
-				}
-			} else {
-				return 0;
-			}
-		});
+		const _sortedData = sortData([...data], sortKey, sortDirection);
 
 		setSortedData(_sortedData);
 
@@ -111,11 +123,14 @@ export default function TableList({
 
 	return (
 		<View>
-			<View style={styles.headerContainer}>
+			<View style={[styles.contentContainer, contentContainerStyle]}>
 				{headers?.map((header, index) => (
 					<View
 						key={index?.toString()}
-						style={styles.headerItemContainer}
+						style={[
+							styles.headerItemContainer,
+							headerItemContainerStyle,
+						]}
 					>
 						<TouchableOpacity
 							style={[styles.headerItem, headerItemStyle]}
@@ -191,7 +206,7 @@ export default function TableList({
 }
 
 const styles = StyleSheet.create({
-	headerContainer: {
+	contentContainer: {
 		width: '100%',
 		flexDirection: 'row',
 	},
