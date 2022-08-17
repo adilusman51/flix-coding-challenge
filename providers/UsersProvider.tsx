@@ -8,18 +8,20 @@ type UsersContextType = {
 	error?: Error;
 	timestamp?: number;
 	refetch?: () => Promise<void>;
+	fetch?: () => Promise<void>;
 };
 
 export const UsersContext = createContext<UsersContextType>({
 	data: undefined,
 	loading: false,
 	error: undefined,
+	timestamp: undefined,
 });
 
 interface UsersProviderProps extends PropsWithChildren {}
 
 export const UsersProvider: FC<UsersProviderProps> = ({ children }) => {
-	const { data, loading, error, refetch } = useFetch<User[]>(
+	const { data, loading, error, refetch, fetch } = useFetch<User[]>(
 		ApiClient.fetchUsers(),
 		{
 			cacheKey: 'Users',
@@ -27,7 +29,7 @@ export const UsersProvider: FC<UsersProviderProps> = ({ children }) => {
 		}
 	);
 	return (
-		<UsersContext.Provider value={{ data, loading, error, refetch }}>
+		<UsersContext.Provider value={{ data, loading, error, refetch, fetch }}>
 			{children}
 		</UsersContext.Provider>
 	);
