@@ -1,14 +1,19 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, ScrollView, StyleSheet } from 'react-native';
+import { useContext, useEffect, useState } from 'react';
+import {
+	ActivityIndicator,
+	KeyboardAvoidingView,
+	ScrollView,
+	StyleSheet,
+} from 'react-native';
 import Searchbar from '../components/SearchBar';
 
 import TableList from '../components/TableList';
 import { View } from '../components/Themed';
 import useDebounce from '../hooks/useDebounce';
-import useFetch from '../hooks/useFetch';
 import useSearch from '../hooks/useSearch';
-import { ApiClient, User } from '../services/ApiClient';
+import { UsersContext } from '../providers/UsersProvider';
+import { ApiClient } from '../services/ApiClient';
 import { AppStackScreenProps } from '../types';
 
 export default function UsersScreen({
@@ -21,25 +26,30 @@ export default function UsersScreen({
 		loading: loadingList,
 		error: errorList,
 		refetch,
-	} = useFetch<User[]>(ApiClient.fetchUsers(), {
-		cacheKey: 'Users',
-		cacheTimeOut: 1000 * 60 * 60 * 1,
-	});
-	const { data: searchData } = useSearch(searchQuery, ApiClient.fetchUsers());
+	} = useContext(UsersContext);
+	const { data: searchData, loading: loadingSearch } = useSearch(
+		searchQuery,
+		ApiClient.fetchUsers()
+	);
 	useEffect(() => {
 		navigation?.setOptions({
 			headerRight: ({ tintColor }) => (
-				<MaterialIcons
-					name='refresh'
-					color={tintColor}
-					size={24}
-					onPress={refetch}
-				/>
+				<View style={{ flexDirection: 'row' }}>
+					{(loadingList || loadingSearch) && (
+						<ActivityIndicator style={{ marginRight: 8 }} />
+					)}
+					<MaterialIcons
+						name='refresh'
+						color={tintColor}
+						size={24}
+						onPress={refetch}
+					/>
+				</View>
 			),
 		});
 
 		return () => {};
-	}, []);
+	}, [loadingList, loadingSearch]);
 
 	const onChangeText = (text: string) => {
 		setSearchString(text);
