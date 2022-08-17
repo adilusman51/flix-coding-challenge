@@ -6,6 +6,7 @@ import {
 	ScrollView,
 	StyleSheet,
 } from 'react-native';
+import ErrorMessage from '../components/ErrorMessage';
 import Searchbar from '../components/SearchBar';
 
 import TableList from '../components/TableList';
@@ -27,10 +28,11 @@ export default function UsersScreen({
 		error: errorList,
 		refetch,
 	} = useContext(UsersContext);
-	const { data: searchData, loading: loadingSearch } = useSearch(
-		searchQuery,
-		ApiClient.fetchUsers()
-	);
+	const {
+		data: searchData,
+		loading: loadingSearch,
+		error: errorSearch,
+	} = useSearch(searchQuery, ApiClient.fetchUsers());
 	useEffect(() => {
 		navigation?.setOptions({
 			headerRight: ({ tintColor }) => (
@@ -75,6 +77,13 @@ export default function UsersScreen({
 						style={styles.separator}
 						lightColor='#eee'
 						darkColor='rgba(255,255,255,0.1)'
+					/>
+					<ErrorMessage
+						message={
+							errorList?.message ||
+							errorSearch?.message ||
+							undefined
+						}
 					/>
 					<TableList
 						headers={[
