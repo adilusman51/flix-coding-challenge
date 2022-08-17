@@ -124,7 +124,7 @@ function useSearch<T = unknown>(
 			refetch();
 		};
 
-		void searchData();
+		searchData();
 
 		// Use the cleanup function for avoiding a possibly...
 		// ...state update after the component was unmounted
