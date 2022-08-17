@@ -190,6 +190,7 @@ const styles = StyleSheet.create({
 	headerTextStyle: {
 		fontSize: 18,
 		lineHeight: 24,
+		fontWeight: '500',
 		textAlign: 'left',
 	},
 	item: {
