@@ -1,21 +1,35 @@
-import { useEffect, useState } from 'react';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 
-import TableList, { Data } from '../components/TableList';
+import TableList from '../components/TableList';
 import { Text, View } from '../components/Themed';
+import useFetch from '../hooks/useFetch';
 import { ApiClient, User } from '../services/ApiClient';
 import { AppStackScreenProps } from '../types';
 
 export default function UsersScreen({
 	navigation,
 }: AppStackScreenProps<'Users'>) {
-	const [data, setData] = useState<Data<User>>([]);
-
+	const { data, loading, error, refetch } = useFetch<User[]>(
+		ApiClient.fetchUsers(),
+		{
+			cacheKey: 'Users',
+			cacheTimeOut: 1000 * 60 * 60 * 1,
+		}
+	);
 	useEffect(() => {
-		const fetchData = async () => {
-			setData(await ApiClient.fetchUsers());
-		};
-		fetchData();
+		navigation?.setOptions({
+			headerRight: ({ tintColor }) => (
+				<MaterialIcons
+					name='refresh'
+					color={tintColor}
+					size={24}
+					onPress={refetch}
+				/>
+			),
+		});
+
 		return () => {};
 	}, []);
 
