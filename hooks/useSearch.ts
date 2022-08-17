@@ -15,12 +15,14 @@ type Action<T> =
 	| { type: 'cache'; payload: T; timestamp: number }
 	| { type: 'error'; payload: Error };
 
-type SearchOptions = {};
+type SearchOptions = {
+	debug?: boolean;
+};
 
 function useSearch<T = unknown>(
 	searchQuery: string,
 	method: Promise<T>,
-	options?: SearchOptions
+	options: SearchOptions = { debug: false }
 ): State<T> & { refetch: () => Promise<void> } {
 	// Used to prevent state update if the component is unmounted
 	const cancelRequest = useRef<boolean>(false);
@@ -63,6 +65,14 @@ function useSearch<T = unknown>(
 
 	const [state, dispatch] = useReducer(fetchReducer, initialState);
 
+	const log = useCallback(
+		(message?: any, ...optionalParams: any[]) => {
+			if (options.debug)
+				console.log(`[useSearch]${message}`, ...optionalParams);
+		},
+		[options.debug]
+	);
+
 	const filter = (data: T, searchQuery: string) => {
 		let filteredData = [];
 		if (data instanceof Array) {
@@ -103,7 +113,7 @@ function useSearch<T = unknown>(
 
 			const timestamp = Date.now();
 			const filteredData = filter(data, searchQuery);
-			console.log(`[success]:`, filteredData, timestamp);
+			log(`[refetch][success]:`, filteredData, timestamp);
 			if (cancelRequest.current) return;
 			dispatch({
 				type: 'success',
@@ -111,7 +121,7 @@ function useSearch<T = unknown>(
 				timestamp: timestamp,
 			});
 		} catch (error) {
-			console.log(`[error]:`, error);
+			log(`[refetch][error]:`, error);
 			if (cancelRequest.current) return;
 			dispatch({ type: 'error', payload: error as Error });
 		}

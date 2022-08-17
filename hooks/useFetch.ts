@@ -78,7 +78,8 @@ function useFetch<T = unknown>(
 
 	const log = useCallback(
 		(message?: any, ...optionalParams: any[]) => {
-			if (options.debug) console.log(message, ...optionalParams);
+			if (options.debug)
+				console.log(`[useFetch]${message}`, ...optionalParams);
 		},
 		[options.debug]
 	);
