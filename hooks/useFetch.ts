@@ -21,12 +21,17 @@ type Action<T> =
 type FetchOptions = {
 	cacheKey: string;
 	cacheTimeOut?: number;
+	disableAutoFetch?: boolean;
+	debug?: boolean;
 };
 
 function useFetch<T = unknown>(
 	method: Promise<T>,
 	options: FetchOptions
-): State<T> & { refetch: () => Promise<void> } {
+): State<T> & {
+	refetch: () => Promise<void>;
+	fetch: () => Promise<void>;
+} {
 	const cache = useRef<Cache<T>>({});
 
 	// Used to prevent state update if the component is unmounted
@@ -36,6 +41,7 @@ function useFetch<T = unknown>(
 		error: undefined,
 		data: undefined,
 		loading: false,
+		timestamp: undefined,
 	};
 
 	// Keep state logic separated
@@ -70,7 +76,16 @@ function useFetch<T = unknown>(
 
 	const [state, dispatch] = useReducer(fetchReducer, initialState);
 
+	const log = useCallback(
+		(message?: any, ...optionalParams: any[]) => {
+			if (options.debug) console.log(message, ...optionalParams);
+		},
+		[options.debug]
+	);
+
 	const refetch = useCallback(async () => {
+		log(`[refetch][loading]`);
+		dispatch({ type: 'loading' });
 		try {
 			const { cacheKey } = options;
 			const data = await method;
@@ -80,21 +95,21 @@ function useFetch<T = unknown>(
 				const jsonValue = JSON.stringify(cache.current[cacheKey]);
 				await AsyncStorage.setItem(cacheKey, jsonValue);
 			} catch (e) {
-				console.log('[Error][Cache][Save]', e);
+				log('[Error][Cache][Save]', e);
 			}
 
-			console.log(`[success]:`, data, timestamp);
+			log(`[refetch][success]:`, data, timestamp);
 			if (cancelRequest.current) return;
 			dispatch({ type: 'success', payload: data, timestamp: timestamp });
 		} catch (error) {
-			console.log(`[error]:`, error);
+			log(`[refetch][error]:`, error);
 			if (cancelRequest.current) return;
 			dispatch({ type: 'error', payload: error as Error });
 		}
 	}, [options.cacheKey, options.cacheTimeOut]);
 
 	const fetchCachedData = useCallback(async () => {
-		console.log(`[loading]`);
+		log(`[fetch][loading]`);
 		dispatch({ type: 'loading' });
 
 		try {
@@ -109,7 +124,7 @@ function useFetch<T = unknown>(
 						const delta = Date.now() - timestamp;
 						if (delta < cacheTimeOut) {
 							cache.current[cacheKey] = cacheData;
-							console.log(`[cache]:`, cache.current[cacheKey]);
+							log(`[fetch][cache]:`, cache.current[cacheKey]);
 
 							if (cancelRequest.current) return;
 							dispatch({
@@ -125,22 +140,23 @@ function useFetch<T = unknown>(
 			return false;
 		} catch (e) {
 			// error reading value
-			console.log('[Error][Cache][Read]', e);
+			log('[Error][Cache][Read]', e);
 			return false;
 		}
 	}, [options.cacheKey, options.cacheTimeOut]);
 
+	const fetch = useCallback(async () => {
+		const cached = await fetchCachedData();
+		if (!cached) {
+			await refetch();
+		}
+	}, []);
+
 	useEffect(() => {
 		cancelRequest.current = false;
-
-		const fetchData = async () => {
-			const cached = await fetchCachedData();
-			if (!cached) {
-				refetch();
-			}
-		};
-
-		void fetchData();
+		if (!options.disableAutoFetch) {
+			fetch();
+		}
 
 		// Use the cleanup function for avoiding a possibly...
 		// ...state update after the component was unmounted
@@ -148,9 +164,9 @@ function useFetch<T = unknown>(
 			cancelRequest.current = true;
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [options.cacheKey, options.cacheTimeOut]);
+	}, [options.cacheKey, options.cacheTimeOut, options.disableAutoFetch]);
 
-	return { ...state, refetch };
+	return { ...state, refetch, fetch };
 }
 
 export default useFetch;
