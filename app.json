@@ -23,10 +23,17 @@
 			"adaptiveIcon": {
 				"foregroundImage": "./assets/images/adaptive-icon.png",
 				"backgroundColor": "#ffffff"
-			}
+			},
+			"package": "com.forloop.flix.challenge",
+			"versionCode": 1
 		},
 		"web": {
 			"favicon": "./assets/images/favicon.png"
+		},
+		"extra": {
+			"eas": {
+				"projectId": "015ddfaa-d39a-46da-81fe-71458cc28134"
+			}
 		}
 	}
 }
