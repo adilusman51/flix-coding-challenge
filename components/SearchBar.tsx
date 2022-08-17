@@ -1,18 +1,30 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, TextInput as DefaultTextInput } from 'react-native';
-import { TextInput, View } from './Themed';
+import { StyleSheet } from 'react-native';
+import { TextInput, TextInputProps, View } from './Themed';
 
-export type SearchBarProps = DefaultTextInput['props'] & {
+export type SearchBarProps = TextInputProps & {
+	iconSize?: number;
+	iconColor?: string;
 	onClearText?: () => void;
 };
 
-const SearchBar = ({ onClearText, ...textProps }: SearchBarProps) => {
+const SearchBar = ({
+	iconSize = 24,
+	iconColor = 'black',
+	onClearText,
+	...textProps
+}: SearchBarProps) => {
 	return (
 		<View style={styles.container}>
-			<MaterialIcons name='search' size={24} />
+			<MaterialIcons name='search' size={iconSize} color={iconColor} />
 			<TextInput style={styles.textInputStyle} {...textProps} />
-			<MaterialIcons name='clear' size={24} onPress={onClearText} />
+			<MaterialIcons
+				name='clear'
+				size={iconSize}
+				color={iconColor}
+				onPress={onClearText}
+			/>
 		</View>
 	);
 };
