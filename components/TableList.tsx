@@ -67,6 +67,8 @@ interface TableListProps {
 	itemTextStyle?: StyleProp<TextStyle>;
 	contentContainerStyle?: StyleProp<ViewStyle>;
 	headerItemContainerStyle?: StyleProp<ViewStyle>;
+	selectedIconColor?: string;
+	unselectedIconColor?: string;
 }
 
 export default function TableList({
@@ -80,6 +82,8 @@ export default function TableList({
 	itemTextStyle,
 	contentContainerStyle,
 	headerItemContainerStyle,
+	selectedIconColor = 'grey',
+	unselectedIconColor = 'rgba(0,0,0,0.2)',
 }: TableListProps) {
 	const [sortDirection, setSortDirection] = useState<SortDirection>(
 		defaultSortDirection || 'None'
@@ -166,8 +170,8 @@ export default function TableList({
 								size={24}
 								color={
 									sortKey === header?.key
-										? 'grey'
-										: 'rgba(0,0,0,0.2)'
+										? selectedIconColor
+										: unselectedIconColor
 								}
 							/>
 						</TouchableOpacity>

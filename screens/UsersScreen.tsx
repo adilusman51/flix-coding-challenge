@@ -3,6 +3,7 @@ import { useContext, useEffect, useState } from 'react';
 import {
 	ActivityIndicator,
 	KeyboardAvoidingView,
+	Platform,
 	ScrollView,
 	StyleSheet,
 } from 'react-native';
@@ -10,7 +11,7 @@ import ErrorMessage from '../components/ErrorMessage';
 import Searchbar from '../components/SearchBar';
 
 import TableList from '../components/TableList';
-import { View } from '../components/Themed';
+import { useThemeColor, View } from '../components/Themed';
 import useDebounce from '../hooks/useDebounce';
 import useSearch from '../hooks/useSearch';
 import { UsersContext } from '../providers/UsersProvider';
@@ -33,10 +34,20 @@ export default function UsersScreen({
 		loading: loadingSearch,
 		error: errorSearch,
 	} = useSearch(searchQuery, ApiClient.fetchUsers());
+
+	const tintColor = useThemeColor({}, 'tint');
+	const unselectedColor = useThemeColor({}, 'tabIconDefault');
+	const selectedColor = useThemeColor({}, 'tabIconSelected');
+
 	useEffect(() => {
 		navigation?.setOptions({
-			headerRight: ({ tintColor }) => (
-				<View style={{ flexDirection: 'row' }}>
+			headerRight: ({}) => (
+				<View
+					style={[
+						{ flexDirection: 'row' },
+						Platform.OS === 'web' && { marginRight: 16 },
+					]}
+				>
 					{(loadingList || loadingSearch) && (
 						<ActivityIndicator style={{ marginRight: 8 }} />
 					)}
@@ -72,6 +83,7 @@ export default function UsersScreen({
 						value={searchString}
 						onChangeText={onChangeText}
 						onClearText={onClearText}
+						iconColor={tintColor}
 					/>
 					<View
 						style={styles.separator}
@@ -91,6 +103,8 @@ export default function UsersScreen({
 							{ label: 'Age', key: 'age' },
 						]}
 						data={searchQuery ? searchData : listData}
+						selectedIconColor={selectedColor}
+						unselectedIconColor={unselectedColor}
 					/>
 				</View>
 			</ScrollView>
