@@ -17,13 +17,14 @@ type Action<T> =
 
 type SearchOptions = {
 	debug?: boolean;
+	disableAutoFetch?: boolean;
 };
 
 function useSearch<T = unknown>(
 	searchQuery: string,
 	method: Promise<T>,
 	options: SearchOptions = { debug: false }
-): State<T> & { refetch: () => Promise<void> } {
+): State<T> & { fetch: () => Promise<void> } {
 	// Used to prevent state update if the component is unmounted
 	const cancelRequest = useRef<boolean>(false);
 
@@ -74,7 +75,8 @@ function useSearch<T = unknown>(
 	);
 
 	const filter = (data: T, searchQuery: string) => {
-		let filteredData = [];
+		let filteredData: any[] = [];
+		if (!searchQuery) return filteredData;
 		if (data instanceof Array) {
 			filteredData =
 				data?.filter((item, index) => {
@@ -107,13 +109,24 @@ function useSearch<T = unknown>(
 		return filteredData;
 	};
 
-	const refetch = useCallback(async () => {
+	const fetch = useCallback(async () => {
+		if (!searchQuery) {
+			const timestamp = Date.now();
+			log(`[fetch][clear]:`, [], timestamp);
+			if (cancelRequest.current) return;
+			dispatch({
+				type: 'success',
+				payload: [] as unknown as T,
+				timestamp: timestamp,
+			});
+			return;
+		}
 		try {
 			const data = await method;
 
 			const timestamp = Date.now();
 			const filteredData = filter(data, searchQuery);
-			log(`[refetch][success]:`, filteredData, timestamp);
+			log(`[fetch][success]:`, filteredData, timestamp);
 			if (cancelRequest.current) return;
 			dispatch({
 				type: 'success',
@@ -121,7 +134,7 @@ function useSearch<T = unknown>(
 				timestamp: timestamp,
 			});
 		} catch (error) {
-			log(`[refetch][error]:`, error);
+			log(`[fetch][error]:`, error);
 			if (cancelRequest.current) return;
 			dispatch({ type: 'error', payload: error as Error });
 		}
@@ -129,9 +142,10 @@ function useSearch<T = unknown>(
 
 	useEffect(() => {
 		cancelRequest.current = false;
+		if (options?.disableAutoFetch) return;
 
 		const searchData = async () => {
-			refetch();
+			fetch();
 		};
 
 		searchData();
@@ -142,9 +156,9 @@ function useSearch<T = unknown>(
 			cancelRequest.current = true;
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [searchQuery]);
+	}, [searchQuery, options.disableAutoFetch]);
 
-	return { ...state, refetch };
+	return { ...state, fetch };
 }
 
 export default useSearch;
