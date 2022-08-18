@@ -155,17 +155,19 @@ export default function TableList({
 							</Text>
 							<MaterialIcons
 								name={
-									sortDirection === 'Asc'
-										? 'arrow-circle-up'
-										: sortDirection === 'Desc'
-										? 'arrow-circle-down'
-										: 'circle'
+									sortKey === header?.key
+										? sortDirection === 'Asc'
+											? 'arrow-upward'
+											: sortDirection === 'Desc'
+											? 'arrow-downward'
+											: 'import-export'
+										: 'import-export'
 								}
 								size={24}
 								color={
 									sortKey === header?.key
 										? 'grey'
-										: 'rgba(0,0,0,0.05)'
+										: 'rgba(0,0,0,0.2)'
 								}
 							/>
 						</TouchableOpacity>
